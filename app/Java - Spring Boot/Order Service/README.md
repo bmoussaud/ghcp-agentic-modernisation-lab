@@ -41,6 +41,8 @@ mvn spring-boot:run
 
 The API starts on **http://localhost:8080**. An in-memory H2 database is seeded with sample orders on startup, and the H2 console is available at http://localhost:8080/h2-console (JDBC URL `jdbc:h2:mem:orders`, user `sa`, no password).
 
+Check the following url **http://localhost:8080/api/orders**
+
 To build a runnable JAR:
 
 ```pwsh
@@ -53,7 +55,7 @@ java -jar target/order-service-1.0.0.jar
 ```pwsh
 cd frontend
 npm install
-npm run dev
+npm run dev or npm run dev -- --host=0.0.0.0 --port=5173 if running in the devcontainer
 ```
 
 The UI runs on **http://localhost:5173** and proxies `/api` requests to the backend on port 8080.
@@ -154,6 +156,14 @@ npm run build
 
 Backend tests cover the repository, service, validation, and web controller layers. Frontend tests use Node's built-in test runner for search, filtering, sorting, and summary calculations.
 
+## AI-assisted modernization
+
+The application remains on its pre-migration stack. For staged Java 25 and Azure Container Apps
+work, start with [`AGENTS.md`](AGENTS.md) and [`constitution.md`](constitution.md), then follow the
+task dependencies and gates in [`plan.md`](plan.md). The validated evidence and limitations are in
+[`assessment/assessment.md`](assessment/assessment.md). Preparation does not authorize provisioning
+Azure resources or starting migration before the baseline is frozen.
+
 ## Intentional Scope
 
-The application stays compact so its Java modernization path remains easy to inspect. Authentication, durable production storage, customer/product/line-item models, status history, server-side querying and pagination, analytics endpoints, charts, bulk actions, exports, and notifications remain out of scope. Java, Spring Boot, and vulnerable dependency upgrades are separate workshop exercises.
+The current demo stays compact so its modernization path remains easy to inspect. Authentication, customer/product/line-item models, status history, server-side querying and pagination, analytics endpoints, charts, bulk actions, exports, and notifications remain out of scope. Java, Spring Boot, and vulnerable dependency upgrades, plus durable PostgreSQL storage and Azure Container Apps deployment, are planned in `plan.md`; they have not yet been implemented.
