@@ -8,6 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -22,7 +24,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
 class OrderServiceUnitTest {
 
     @Mock
@@ -60,8 +62,9 @@ class OrderServiceUnitTest {
     }
 
     @Test
-    void createPersistsOrder() {
+    void createPersistsOrderAndLogsOnlyNonSensitiveLifecycleData(CapturedOutput output) {
         Order order = new Order("carol", new BigDecimal("10.00"));
+        order.setId(7L);
         order.setStatus(OrderStatus.COMPLETED);
         when(orderRepository.save(order)).thenReturn(order);
 
@@ -69,11 +72,16 @@ class OrderServiceUnitTest {
 
         assertEquals(OrderStatus.PENDING, order.getStatus());
         verify(orderRepository).save(order);
+        assertTrue(output.getOut().contains(
+                "operation=create orderId=7 status=PENDING outcome=success"));
+        assertFalse(output.getOut().contains("carol"));
+        assertFalse(output.getOut().contains("10.00"));
     }
 
     @Test
-    void updateStatusPersistsTheRequestedStatus() {
+    void updateStatusPersistsTheRequestedStatusAndLogsLifecycleData(CapturedOutput output) {
         Order order = new Order("dave", new BigDecimal("15.00"));
+        order.setId(4L);
         when(orderRepository.findById(4L)).thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
 
@@ -82,15 +90,21 @@ class OrderServiceUnitTest {
         assertTrue(result.isPresent());
         assertEquals(OrderStatus.PROCESSING, result.get().getStatus());
         verify(orderRepository).save(order);
+        assertTrue(output.getOut().contains(
+                "operation=updateStatus orderId=4 previousStatus=PENDING status=PROCESSING outcome=success"));
+        assertFalse(output.getOut().contains("dave"));
+        assertFalse(output.getOut().contains("15.00"));
     }
 
     @Test
-    void updateStatusReturnsEmptyWhenOrderIsMissing() {
+    void updateStatusReturnsEmptyAndLogsNotFoundWhenOrderIsMissing(CapturedOutput output) {
         when(orderRepository.findById(99L)).thenReturn(Optional.empty());
 
         Optional<Order> result = orderService.updateStatus(99L, OrderStatus.COMPLETED);
 
         assertFalse(result.isPresent());
         verify(orderRepository, never()).save(any(Order.class));
+        assertTrue(output.getOut().contains(
+                "operation=updateStatus orderId=99 requestedStatus=COMPLETED outcome=not_found"));
     }
 }

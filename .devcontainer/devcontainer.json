@@ -13,7 +13,8 @@
       "mavenVersion": "latest"
     },
     "ghcr.io/devcontainers/features/node:2": {
-      "version": "22"
+      "version": "22",
+      "pnpmVersion": "none"
     },
     "ghcr.io/devcontainers/features/azure-cli:1": {
       "version": "latest",
@@ -36,10 +37,10 @@
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [],
+  "forwardPorts": [8080,5173],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "npm install -g @moaw/cli @github/copilot",
+  "postCreateCommand": "npm config set registry https://packagefeedproxy.microsoft.io/npm/ --location=user && npm install -g @moaw/cli @github/copilot"
 
   // Set minimal host requirements for the container.
   // "hostRequirements": {
