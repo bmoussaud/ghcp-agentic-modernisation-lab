@@ -6,8 +6,8 @@ A small Spring Boot REST API for managing customer orders, paired with a lightwe
 
 | Layer      | Technology                                  |
 | ---------- | ------------------------------------------- |
-| Language   | Java 8                                       |
-| Framework  | Spring Boot 2.7.18 (Web, Data JPA, Validation) |
+| Language   | Java 25                                      |
+| Framework  | Spring Boot 3.5.16 (Web, Data JPA, Validation) |
 | Database   | H2 (in-memory)                               |
 | Build      | Maven                                         |
 | Frontend   | React 18 + Vite 5                            |
@@ -30,7 +30,7 @@ frontend/                   # React + Vite UI
 
 ## Prerequisites
 
-- JDK 17+ and Maven 3.6+ (the build currently targets Java 8 for the initial modernization baseline)
+- JDK 25 and Maven 3.9+
 - Node.js 18+ (for the frontend)
 
 ## Running the Backend
@@ -39,7 +39,7 @@ frontend/                   # React + Vite UI
 mvn spring-boot:run
 ```
 
-The API starts on **http://localhost:8080**. An in-memory H2 database is seeded with sample orders on startup, and the H2 console is available at http://localhost:8080/h2-console (JDBC URL `jdbc:h2:mem:orders`, user `sa`, no password).
+The API starts on **http://localhost:8080**. An in-memory H2 database is seeded with sample orders on startup, and the H2 console is available at http://localhost:8080/h2-console (JDBC URL `jdbc:h2:mem:orders`, user `sa`). The datasource password is read from `SPRING_DATASOURCE_PASSWORD`; its empty default preserves the passwordless local H2 baseline. Production environments must inject the required secret at runtime rather than storing it in source control or an image.
 
 Check the following url **http://localhost:8080/api/orders**
 
@@ -49,6 +49,15 @@ To build a runnable JAR:
 mvn clean package
 java -jar target/order-service-1.0.0.jar
 ```
+
+To build and run the Java 25 container:
+
+```pwsh
+docker build -t order-service:local .
+docker run --rm -p 8080:8080 -e SPRING_DATASOURCE_PASSWORD order-service:local
+```
+
+The image runs as a non-root user, listens through the published port, and does not contain a datasource password.
 
 ## Running the Frontend
 
@@ -158,11 +167,10 @@ Backend tests cover the repository, service, validation, and web controller laye
 
 ## AI-assisted modernization
 
-The application remains on its pre-migration stack. For staged Java 25 and Azure Container Apps
-work, start with [`AGENTS.md`](AGENTS.md) and [`constitution.md`](constitution.md), then follow the
-task dependencies and gates in [`plan.md`](plan.md). The validated evidence and limitations are in
-[`assessment/assessment.md`](assessment/assessment.md). Preparation does not authorize provisioning
-Azure resources or starting migration before the baseline is frozen.
+The backend now targets Java 25 and Spring Boot 3.5.16. For subsequent Azure Container Apps work,
+start with [`AGENTS.md`](AGENTS.md) and [`constitution.md`](constitution.md), then follow the task
+dependencies and gates in [`plan.md`](plan.md). The validated evidence and limitations are in
+[`assessment/assessment.md`](assessment/assessment.md).
 
 ## Intentional Scope
 
